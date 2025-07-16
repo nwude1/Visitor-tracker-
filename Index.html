@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Full Visitor Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; padding: 20px; margin: 0; }
+    .page { display: none; }
+    .active { display: block; }
+    button { margin: 10px 5px 0 0; padding: 10px; font-size: 16px; }
+    #consentBox {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #333; color: white;
+      padding: 15px; text-align: center;
+      display: none;
+    }
+    #consentBox button {
+      background: #4CAF50; color: white; border: none;
+      padding: 10px 20px; font-size: 16px;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="greeting">Welcome!</h1>
+  <p id="lastPageInfo"></p>
+  <p id="clickInfo"></p>
+  <p id="timeInfo"></p>
+
+  <div class="page active" id="home">
+    <h2>🏠 Home Page</h2>
+    <p>This is the home section.</p>
+  </div>
+
+  <div class="page" id="about">
+    <h2>ℹ️ About Page</h2>
+    <p>This is the about section.</p>
+  </div>
+
+  <div class="page" id="contact">
+    <h2>📞 Contact Page</h2>
+    <p>This is the contact section.</p>
+  </div>
+
+  <button onclick="switchPage('home')">Home</button>
+  <button onclick="switchPage('about')">About</button>
+  <button onclick="switchPage('contact')">Contact</button>
+  <button onclick="resetAll()">Reset All</button>
+
+  <div id="consentBox">
+    We use cookies to improve your experience.
+    <button onclick="acceptCookies()">Accept</button>
+  </div>
+
+  <script>
+    // Cookie helpers
+    function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
+    }
+
+    function getCookie(name) {
+      let cookies = document.cookie.split("; ");
+      for (let i = 0; i < cookies.length; i++) {
+        let parts = cookies[i].split("=");
+        if (parts[0] === name) return decodeURIComponent(parts[1]);
+      }
+      return null;
+    }
+
+    // Cookie Consent
+    if (!getCookie("cookieConsent")) {
+      document.getElementById("consentBox").style.display = "block";
+    }
+
+    function acceptCookies() {
+      setCookie("cookieConsent", "true", 365);
+      document.getElementById("consentBox").style.display = "none";
+    }
+
+    // Visit tracking
+    let visitCount = parseInt(getCookie("visitCount")) || 0;
+    visitCount++;
+    setCookie("visitCount", visitCount, 30);
+    document.getElementById("greeting").innerText = 
+      visitCount === 1 ? "Welcome for the first time!" : `Welcome back! You've visited ${visitCount} times.`;
+
+    // Page tracking
+    let lastPage = getCookie("lastPage");
+    if (lastPage) {
+      document.getElementById("lastPageInfo").innerText = "Last page visited: " + lastPage;
+    }
+
+    function switchPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      setCookie("lastPage", pageId, 30);
+      document.getElementById("lastPageInfo").innerText = "Now on page: " + pageId;
+    }
+
+    // Click tracking
+    let clickCount = parseInt(getCookie("clickCount")) || 0;
+    document.body.addEventListener("click", () => {
+      clickCount++;
+      setCookie("clickCount", clickCount, 30);
+      document.getElementById("clickInfo").innerText = `You’ve clicked ${clickCount} times.`;
+    });
+
+    // Time tracking
+    let timeSpent = parseInt(getCookie("timeSpent")) || 0;
+    setInterval(() => {
+      timeSpent++;
+      setCookie("timeSpent", timeSpent, 30);
+      document.getElementById("timeInfo").innerText = `Time spent on site: ${timeSpent} seconds.`;
+    }, 1000);
+
+    // Reset everything
+    function resetAll() {
+      ["visitCount", "clickCount", "timeSpent", "lastPage", "cookieConsent"].forEach(c => setCookie(c, "", -1));
+      location.reload();
+    }
+  </script>
+</body>
+</html>
